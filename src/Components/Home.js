@@ -16,9 +16,13 @@ const Home = () =>{
     try{
       await axios.get("http://localhost:4000/users")
       .then((response => {
-        console.log(response.data.data.data)
+        console.log(response)
         setEmp(response.data.data.data.map((row) => ({ 
-          ...row, 
+          // ...row, 
+          id:row._id,
+          name:row.name,
+          email:row.email,
+          role:row.role,
           isChecked: false 
         })));
       }))
@@ -31,14 +35,36 @@ const Home = () =>{
     getEmp()
   },[]);
  
-  const deleteClick = (id)=>{
+  const deleteClick = async (id)=>{
     let allEmp = [...emp];
     allEmp = allEmp.filter(employee => employee.id !== id);
-    setEmp(allEmp);
+    try{
+      await axios.delete("http://localhost:4000/users/"+id)
+      .then((response => {
+        console.log(response.status)
+        if(response.status==200){
+          setEmp(allEmp);
+        }
+      }))
+    }catch(e){
+      console.log(e);
+    }
   }
 
-  const delSelected =()=>{
+  const delSelected = ()=>{
    let duplicateEmployees = [...emp];
+   duplicateEmployees.forEach(async (employee) =>{
+     if(employee.isChecked){
+      try{
+        await axios.delete("http://localhost:4000/users/"+employee.id)
+        .then((response => {
+          console.log(response.status)
+        }))
+      }catch(e){
+        console.log(e);
+      }
+     }
+    });
    duplicateEmployees = duplicateEmployees.filter(employee => !employee.isChecked);
    setEmp(duplicateEmployees);
   }
